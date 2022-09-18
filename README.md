@@ -11,8 +11,9 @@ Here are the abridged instructions for getting started:
 ```
 git clone https://github.com/ammitra/timber-docker.git
 docker run --network=host -it ammitra/timber-docker:latest
+source setup.sh
 ```
-At this point, you'll be inside the interactive container and you can just run `source setup.sh` and begin using TIMBER. 
+At this point, you'll be inside the container and ready to use TIMBER!
 
 ## Longer Instructions
 
@@ -58,4 +59,6 @@ TIMBER added to PATH
 (timber-env) physicist@hostname:~$
 ```
 Now you're ready to use TIMBER in the container!
+
+
 

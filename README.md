@@ -1,5 +1,5 @@
 # TIMBER in a container
-This repository contains the Dockerfile used to create a container running TIMBER and all its dependencies.
+This repository contains the Dockerfile used to create a container running [TIMBER](https://github.com/lcorcodilos/TIMBER) and all its dependencies. Specifically, the resulting dockerfile makes use of the official [ROOT Docker image](https://hub.docker.com/r/rootproject/root) and a [modified version](https://github.com/mroguljic/TIMBER/tree/Zbb_branch_py3) of TIMBER that has support for Python 3 installation.
 
 ## Setup
 First, install [Docker](https://www.docker.com/) for your operating system. There are many tutorials online for this. 

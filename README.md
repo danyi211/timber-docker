@@ -6,6 +6,16 @@ First, install [Docker](https://www.docker.com/) for your operating system. Ther
 
 After installing Docker and testing that it works (`docker run hello-world`), you are ready to either pull the `timber-docker` image from the [Docker Hub](https://hub.docker.com/) (recommended) or build it yourself. **NOTE:** The base ROOT image that this container is built on is 1.5GB and the final `timber-docker` image is ~2GB. Once you've pulled/built the container, you won't have to do it again.  
 
+## TLDR
+Here are the abridged instructions for getting started:
+```
+git clone https://github.com/ammitra/timber-docker.git
+docker run --network=host -it ammitra/timber-docker:latest
+```
+At this point, you'll be inside the interactive container and you can just run `source setup.sh` and begin using TIMBER. 
+
+## Longer Instructions
+
 ### Pulling image (recommended)
 To pull the ready-made image, run `docker pull ammitra/timber-docker:latest`
 

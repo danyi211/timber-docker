@@ -201,7 +201,11 @@ Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1
 ```
 Normally, you'd see the histogram of masses pop up in a little GUI. However, dealing with X11 forwarding is difficult in containers and I haven't implemented that here. For more info, read [here](https://opendata-forum.cern.ch/t/x11-forwarding-with-docker/31). 
 
-Finally, let's run a ROOT C++ macro which will actually give us the histogram we want. It is already written and located under `rootfiles/macro.C`, so you can study it and see what exactly it does.
+Finally, let's run a ROOT C++ macro which will actually give us the histogram we want. It is already written and located under `rootfiles/macro.C`, so you can study it and see what exactly it does. Close the ROOT shell, then run 
+```
+physicist@1fd467d1e9b2:~$ root rootfiles/macro.C
+```
+You'll see an output of:
 ```
 root [0]
 Processing rootfiles/macro.C...
@@ -225,10 +229,12 @@ There is of course much more to learn about ROOT, but hopefully this gives you a
 <summary>This exercise will introduce you to TIMBER, first interactively via the command line and then using a Python script.</summary>
 <br>
 For this exercise, it'll be usefil to open the container in one window and this repository in another, so that you can look at the outputs locally once they've been processed. Begin by running:
+
 ```
 docker run -it -v ~/JHU/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 source setup.sh
 ```
+
 By `source`ing the setup file, we've activated the python virtual environment containing TIMBER and we are ready to call any of the TIMBER functions within a python shell or via a script. You'll see import errors if you forget to do this step. 
 
 **WRITE TUTORIAL WALKTHROUGH HERE**

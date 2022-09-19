@@ -220,13 +220,25 @@ There is of course much more to learn about ROOT, but hopefully this gives you a
 </details>
 
 ### TIMBER exercise
-This exercise will introduce you to pyROOT and TIMBER, which are a bit easier to work with than the C++ interface. To begin, simply run 
+
+<details>
+<summary>This exercise will introduce you to TIMBER, first interactively via the command line and then using a Python script.</summary>
+<br>
+For this exercise, it'll be usefil to open the container in one window and this repository in another, so that you can look at the outputs locally once they've been processed. Begin by running:
+```
+docker run -it -v ~/JHU/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+source setup.sh
+```
+By `source`ing the setup file, we've activated the python virtual environment containing TIMBER and we are ready to call any of the TIMBER functions within a python shell or via a script. You'll see import errors if you forget to do this step. 
+
+**WRITE TUTORIAL WALKTHROUGH HERE**
+
+To do everything we did above all at once, just run:
 ```
 docker run -it -v ~/path/to/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 source setup.sh
 python rootfiles/timber.py
 ```
-That's all - the `timber.py` script contains everything you need to replicate what we just did previously. **MORE CONTENT TO COME**
-
+</details>
 
 

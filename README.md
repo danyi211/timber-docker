@@ -205,15 +205,28 @@ Finally, let's run a ROOT C++ macro which will actually give us the histogram we
 ```
 root [0]
 Processing rootfiles/macro.C...
-Info in <TCanvas::Print>: pdf file /home/physicist/rootfiles/output.pdf has been created
+Info in <TCanvas::Print>: pdf file /home/physicist/rootfiles/macro_output.pdf has been created
 root [1]
 ```
 If you look in the `rootfiles/` directory on your local machine, you'll see the output file. Take a look - this is the softdrop mass of all the jets in our sample! The sample in question is Monte Carlo simulation of a Beyond Standard Model process - a hypothetical heavy vector-like partner to the top quark, $T^{\prime}$ whose decay has been set in the generator to a top quark and a new scalar $\phi$. So, the jets in this sample are all from the decay of a top quark and the decay of the scalar. In this sample, the $m_{T^{\prime}}=1.8$ TeV and the $m_\phi=125$ GeV (the Higgs boson mass). The top quark has a mass of 173 GeV/c^2 - does the resulting plot make sense??
 
-There is of course much more to learn about ROOT, but hopefully this gives you an idea of the power of ROOT as well as some insights into the tools you can make use of when writing analyses in TIMBER. The next section will cover an example of how to use TIMBER to do the same thing as we just did here, but in a *much* more readable and painless manner!
+If the macro seemed complicated, that's understandable. There are several Python wrappers for ROOT, the most common being [pyROOT](https://root.cern/manual/python/), which comes bundled in our container. To try it out, simply run 
+```
+python rootfiles/macro.py
+```
+If you take a look at the code you'll see the parallels, but it's noticeably easier in Python since you don't have to worry about pointers or memory management (at least for this simple example). 
+
+There is of course much more to learn about ROOT, but hopefully this gives you an idea of the power of ROOT as well as some insights into the tools you can make use of when writing analyses in TIMBER.
 </details>
 
 ### TIMBER exercise
+This exercise will introduce you to pyROOT and TIMBER, which are a bit easier to work with than the C++ interface. To begin, simply run 
+```
+docker run -it -v ~/path/to/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+source setup.sh
+python rootfiles/timber.py
+```
+That's all - the `timber.py` script contains everything you need to replicate what we just did previously. **MORE CONTENT TO COME**
 
 
 

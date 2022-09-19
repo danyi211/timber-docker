@@ -24,5 +24,5 @@ void macro() {
     // draw histo, will populate the canvas
     myh->Draw();
     // print canvas, save file
-    c->Print("/home/physicist/rootfiles/output.pdf");
+    c->Print("/home/physicist/rootfiles/macro_output.pdf");
 }

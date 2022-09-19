@@ -214,6 +214,15 @@ There is of course much more to learn about ROOT, but hopefully this gives you a
 </details>
 
 ### TIMBER exercise
-
+<details>
+<summary>This exercise will introduce you to pyROOT and TIMBER, which are a bit easier to work with than the C++ interface.</summary>
+To begin, simply run 
+```
+docker run -it -v ~/path/to/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+source setup.sh
+python rootfiles/timber.py
+```
+That's all - the `timber.py` script contains everything you need to replicate what we just did previously. **MORE CONTENT TO COME**
+</details>
 
 

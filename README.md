@@ -84,7 +84,7 @@ The `path/to/local_dir` is the explicit path to the directory you want to mount,
 ```
 [amitav@thinkpad ~]: pwd
 /home/amitav/JHU/TIMBER_Docker
-[amitav@thinkpad ~]: docker run -it -v ~/JHU/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+[amitav@thinkpad ~]: docker run -it -v ~/JHU/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 physicist@1fd467d1e9b2:~$ ls
 rootfiles  setup.sh
 physicist@1fd467d1e9b2:~$ ls -alh rootfiles
@@ -109,9 +109,10 @@ Included in the repository are a set of exercise to help you learn both ROOT's C
 <details>
 <summary>This exercise will introduce you to the ROOT universe. Though painful sometimes, it's a very impressive piece of software and it's important to be familiar with the C++ backend before using TIMBER or any other Python wrapper over it.</summary>
 <br>
+ 
 First, run the container and mount the `rootfiles` directory as a volume in the container with the `-v` flag.
 ```
-docker run --network=host -it -v /path/to/TIMBER_Docker/rootfiles:/home/physicist/rootfiles
+docker run --network=host -it -v /path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 ```
 
 Once inside the container, the ROOT software is already enabled by default so we can immediately start using it. Run

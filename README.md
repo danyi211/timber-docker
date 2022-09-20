@@ -28,6 +28,8 @@ source setup.sh
 ```
 At this point, you'll be inside the container and ready to use TIMBER!
 
+**NOTE:** If you are running the container on an ARM-based processor (e.g. Macbook M1), you'll also need to specify `--platform linux/amd64` to avoid emulation issues.
+
 ## Longer Instructions
 <details>
 <summary>Longer setup instructions and info about Docker</summary>
@@ -80,6 +82,9 @@ For our purposes, mounting volumes will be very useful. By passing the `-v` flag
 ```
 docker run -v /path/to/local_dir:/path/in/container
 ```
+
+**NOTE:** It seems that most OSes will only mount volumes located in the User's directory (i.e. `~` on Mac, Linux). So, be sure to clone this repository to somewhere within your user home directory so that the `timber-docker/rootfiles` directory can be mounted within the container properly.
+
 The `path/to/local_dir` is the explicit path to the directory you want to mount, and `/path/in/container` is the full path to where you'd like to have it mounted in the container. As an example, if I wanted to mount the `rootfiles` directory in this repository to the container, to have access to the files there once inside the container, I would do:
 ```
 [amitav@thinkpad ~]: pwd
@@ -232,7 +237,7 @@ There is of course much more to learn about ROOT, but hopefully this gives you a
 For this exercise, it'll be usefil to open the container in one window and this repository in another, so that you can look at the outputs locally once they've been processed. Begin by running:
 
 ```
-docker run -it -v ~/JHU/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+docker run -it -v ~/path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 source setup.sh
 ```
 
@@ -242,7 +247,7 @@ By `source`ing the setup file, we've activated the python virtual environment co
 
 To do everything we did above all at once, just run:
 ```
-docker run -it -v ~/path/to/TIMBER_Docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+docker run -it -v ~/path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 source setup.sh
 python rootfiles/timber.py
 ```

@@ -10,6 +10,7 @@ This repository contains the Dockerfile used to create a container running [TIMB
   * [Running the container](#running-the-container)
   * [Once inside the container](#once-inside-the-container)
   * [Mounting volumes](#mounting-volumes)
+  * [Enabling X11 forwarding](#enabling-x11-forwarding)
 - [Some Exercises](#running-exercises)
   * [ROOT Exercise](#root-exercise)
   * [TIMBER Exercise](#timber-exercise)
@@ -27,6 +28,11 @@ docker run --network=host -it ammitra/timber-docker:latest
 source setup.sh
 ```
 At this point, you'll be inside the container and ready to use TIMBER!
+
+If you want to get setup for use with the tutorials included in this repository, then simply run:
+```
+source exercises.sh
+```
 
 **NOTE:** If you are running the container on an ARM-based processor (e.g. Macbook M1), you'll also need to specify `--platform linux/amd64` to avoid emulation issues.
 
@@ -101,6 +107,10 @@ physicist@1fd467d1e9b2:~$ pwd
 /home/physicist
 ```
 And now I can access the files in that mounted directory!
+
+### Enabling X11 forwarding
+If you want to use GUI applications (including the ROOT [TBrowser](https://root.cern.ch/doc/master/classTBrowser.html)), then you will need to enable X11 forwarding through the container. If you are unfamiliar with X11 forwarding, there are explanations and tutorials online (e.g. [here](https://www.businessnewsdaily.com/11035-how-to-use-x11-forwarding.html)). After having set up an Xserver, you can pass `--env="DISPLAY"` to the container to enable the forwarding and allow you to see the GUI output through the container. 
+
 </details>
 
 ## Running Exercises
@@ -149,8 +159,9 @@ TFile**         rootfiles/TprimeB-1800-125.root
   KEY: TTree    ParameterSets;1 Parameter sets
 ```
 
-We see that the file (called a [TFile](https://root.cern.ch/doc/master/classTFile.html)) contains keys called [TTrees](https://root.cern.ch/doc/master/classTTree.html). These trees store physics variables, histograms, formulas, and other useful objects. These trees are also converted to [RDataFrames](https://root.cern/doc/master/classROOT_1_1RDataFrame.html) by the TIMBER Analyzer module. To check out what's in the tree, we can use `TTree::Print()`:
+We see that the file (called a [TFile](https://root.cern.ch/doc/master/classTFile.html)) contains keys called [TTrees](https://root.cern.ch/doc/master/classTTree.html). These trees store physics variables, histograms, formulas, and other useful objects. These trees are also converted to [RDataFrames](https://root.cern/doc/master/classROOT_1_1RDataFrame.html) by the TIMBER Analyzer module. To check out what's in the tree, we can use `TTree::Print()`. Note that, the trees displayed by `.ls()` are all pointers, so we have to use the C++ dereference operator (`->`) on them to access their member functions (such as `Print()`):
 ```
+root [1] Events->Print()
 ******************************************************************************
 *Tree    :Events    : Events                                                 *
 *Entries :     8000 : Total =        92051425 bytes  File  Size =   24135006 *
@@ -199,6 +210,12 @@ Type <CR> to continue or q to quit ==> q
 ***********************************
 ```
 From this, we can deduce that Event 1 (row 1) had three fat jets, with masses 169, 131, and 5 GeV. TTree tools like `Print()` and `Scan()` are useful when you want to find variables of interest in your datasets (which can then be used in TIMBER!)
+
+**NOTE:** You can also use ROOT's TBrowser to open a GUI application to view all the trees and branches in your file. This is nice because it offers a user-friendly graphical representation of the structure and contents of your data files. To open from the ROOT prompt, just run 
+```
+root [0] TBrowser b
+```
+to open up the GUI window. From here, you can view your file interactively via a GUI. If you are running ROOT in the container, you'll need to have passed the `--env="DISPLAY"` flag when first running the container in order to access your display. 
 
 Now that we have a variable of interest, what can we do with it? Normally, we might be interested in seeing a distribution of that variable for our dataset. So, let's make use of the [`TTree::Draw()`](https://root.cern.ch/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) function to produce a histogram of the softdrop masses of all jets in the dataset:
 ```

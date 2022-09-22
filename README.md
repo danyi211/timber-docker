@@ -160,6 +160,9 @@ TFile**         rootfiles/TprimeB-1800-125.root
 ```
 
 We see that the file (called a [TFile](https://root.cern.ch/doc/master/classTFile.html)) contains keys called [TTrees](https://root.cern.ch/doc/master/classTTree.html). These trees store physics variables, histograms, formulas, and other useful objects. These trees are also converted to [RDataFrames](https://root.cern/doc/master/classROOT_1_1RDataFrame.html) by the TIMBER Analyzer module. To check out what's in the tree, we can use `TTree::Print()`. Note that, the trees displayed by `.ls()` are all pointers, so we have to use the C++ dereference operator (`->`) on them to access their member functions (such as `Print()`):
+
+Run `Events->Print()` in the ROOT terminal:
+
 ```
 root [1] Events->Print()
 ******************************************************************************
@@ -196,9 +199,9 @@ root [4] Events->Scan("FatJet_msoftdrop")
 ***********************************
 *    Row   * Instance * FatJet_ms *
 ***********************************
-*        0 *        0 *   168.875 *
-*        0 *        1 *   131.125 *
-*        0 *        2 * 5.1953125 *
+*        0 *        0 *   168.875 *    <- Event 0, jet 1
+*        0 *        1 *   131.125 *    <- Event 0, jet 2
+*        0 *        2 * 5.1953125 *    <- Event 0, jet 3
 *        1 *        0 *   136.875 *
 *        1 *        1 * 8.3515625 *
 *        2 *        0 *   175.375 *
@@ -211,7 +214,7 @@ Type <CR> to continue or q to quit ==> q
 ```
 From this, we can deduce that Event 1 (row 1) had three fat jets, with masses 169, 131, and 5 GeV. TTree tools like `Print()` and `Scan()` are useful when you want to find variables of interest in your datasets (which can then be used in TIMBER!)
 
-**NOTE:** You can also use ROOT's TBrowser to open a GUI application to view all the trees and branches in your file. This is nice because it offers a user-friendly graphical representation of the structure and contents of your data files. To open from the ROOT prompt, just run 
+**NOTE:** You can also use ROOT's [TBrowser](https://root.cern.ch/doc/master/classTBrowser.html) to open a GUI application to view all the trees and branches in your file. This is nice because it offers a user-friendly graphical representation of the structure and contents of your data files. To open from the ROOT prompt, just run 
 ```
 root [0] TBrowser b
 ```
@@ -251,23 +254,126 @@ There is of course much more to learn about ROOT, but hopefully this gives you a
 <details>
 <summary>This exercise will introduce you to TIMBER, first interactively via the command line and then using a Python script.</summary>
 <br>
-For this exercise, it'll be usefil to open the container in one window and this repository in another, so that you can look at the outputs locally once they've been processed. Begin by running:
+
+The main goal of this exercise is to introduce you to some of the functionality of TIMBER. Most, if not all, of the time you use TIMBER it will be inside of a Python script which you then execute. However, for the sake of illustration we will run this exercise on the command line in a python shell. This way you can see the results of every step as it happens. The full exercise is also contained in the script `rootfiles/timber.py`, which you should run after the exercise to see an implementation of TIMBER in a script. The file also has a lot of comments which hopefully make things clear. 
+
+For this exercise, it'll be useful to open the container in one window and this repository in another, so that you can look at the outputs locally once they've been processed. Begin by running:
 
 ```
-docker run -it -v ~/path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+docker run -it -v /path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 source setup.sh
 ```
 
 By `source`ing the setup file, we've activated the python virtual environment containing TIMBER and we are ready to call any of the TIMBER functions within a python shell or via a script. You'll see import errors if you forget to do this step. 
-
-**WRITE TUTORIAL WALKTHROUGH HERE**
-
-To do everything we did above all at once, just run:
+ 
+Open a python shell by invoking `python` on the command line, then run 
 ```
-docker run -it -v ~/path/to/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
-source setup.sh
-python rootfiles/timber.py
+from TIMBER.Analyzer import analyzer
+from TIMBER.Tools.Common import *
 ```
+This will import the main TIMBER class, `analyzer`, as well as some other useful tools built-in to TIMBER. 
+ 
+We can instantiate an analyzer object by passing it either a ROOT file or a `.txt` list of ROOT files. Upon instantiation, the analyzer will create an RDataFrame out of the file(s). For this example, we will just pass the analyzer the ROOT file containing Monte Carlo simulation of an 1800 GeV $T^{\prime}$, a hypothetical heavy partner to the top quark, which in this sample decays to a top quark and a new scalar $\phi$ of mass 125 GeV. 
+```
+ana = analyzer('/home/physicist/rootfiles/TprimeB-1800-125.root')
+```
+
+Our goal will now be to use TIMBER to define the events containing jets corresponding to a top quark and a $\phi$ (which will be most of them in this case), then use the invariant mass of those jets to reconstruct the $T^{\prime}$ resonance. 
+
+Let's start by making some kinematic cuts targeting our signal topology. We expect the resonance to decay to two particles, so we will be looking for two jets roughly back-to-back. The $T^{\prime}$ itself is heavy, so the top and $\phi$ will be significantly Lorentz boosted which will cause their respective decay products ($t\to bW(qq)$ and $\phi\to b\bar{b}$) to be reconstructed as large-radius (AK8) jets. Here are some basic kinematic cuts:
+
+```
+ana.Cut('nJets', 'nFatJet > 2')
+ana.Cut('pT_cut', 'FatJet_pt[0] > 400 && FatJet_pt[1] > 400')
+ana.Cut('eta_cut', 'abs(FatJet_eta[0]) < 2.4 && abs(FatJet_eta[1]) < 2.4')
+ana.Cut('msd_cut', 'FatJet_msoftdrop[0] > 50 && FatJet_msoftdrop[1] > 50') 
+```
+
+The `Cut()` function takes in the name of the cut for internal tracking and a string which evaluates to C++ actions on the DataFrame. The action must always only reference columns (variables) that exist in the DataFrame, C++ functions defined in the ROOT and TIMBER libraries (`abs()`, `min()`, etc.), or C++ functions that you define yourself and call via TIMBER. 
+ 
+We will now show an example of calling a user-defined C++ function. First, you would write an implementation of the function in a `.cc` or `.cpp` file, then you would compile it via TIMBER. When we ran `from TIMBER.Tools.Common import *` earlier, we imported the `CompileCpp()` function, which takes in a string containing the path to the file containing the function you'd like to compile. There is already one written for this exercise, so compile via 
+```
+CompileCpp('/home/physicist/rootfiles/Modules.cc')
+```
+
+Now, let's invoke one of the custom functions on our DataFrame via TIMBER:
+```
+ana.Define('DijetIdxs', 'PickDijets(FatJet_pt, FatJet_eta, FatJet_phi, FatJet_msoftdrop)')
+```
+ 
+Here, we define a new column (variable) named `DijetIdxs`, which will represent the indices of any two jets in the event which meet the criteria that they are separated by at least 90 degrees. When we invoke `Define()`, whatever our action defined in the input string is will be applied *to each row in the DataFrame.* That means that our `PickDijets()` function will be applied to each event. You can look at the `rootfiles/Modules.cc` file for more details on the implementation, but essentially if we have an event that has, say, 4 jets and jets 0 and 2 are back-to-back, the `PickDijets()` function will return a vector of those indices: `{0, 2}` and assign it to that event. Specifically, the function will return a vector `{-1, -1}` if there are no jets in the event meeting our back-to-back criteria. 
+
+We can now cut on this newly-defined variable:
+```
+ana.Cut('dijetsExist', 'DijetIdxs[0] > -1 && DijetIdxs[1] > -1')
+```
+ 
+For each event, the C++ logic evaluates to either `1`: this event has two jets meeting our criteria or `0`: this event does not have any jets meeting our criteria, which the RDataFrame then uses to filter eligible events. 
+ 
+At this point, we've sufficiently "skimmed" our data and we can attempt to make some jet identification. We will start off with a naive method in which we assume that the 0th index in `DijetIdxs` represents the top and the 1st index the $\phi$ candidate. The vectors are ordered by pT, so this is not a terrible proxy for the top and $\phi$ identification in this case. 
+ 
+We will make use of a special TIMBER function to create a new collection of columns (variables) based on an existing one. We will take the `FatJet_*` columns and recast them to be either `Top_*` or `Phi_*` columns based on the indices of each jet. To conceptualize this, let's draw a diagram. Currently, we have a DataFrame that looks like (values given are examples):
+```
+-----------------------------------------------------------------------------------------------------------------------
+| Event # |          FatJet_pt             |          FatJet_phi          |          FatJet_eta        |   DijetIdxs  |
+-----------------------------------------------------------------------------------------------------------------------
+| Event 0 | {782.1, 600.1, 534.3, 456.7}   |  {-2.82, 0.44, -1.12, 1.14}  | {-0.03, 1.23, 0.08, -1.3}  |    {0, 2}    |
+-----------------------------------------------------------------------------------------------------------------------
+... and so on, for all events that have passed selection so far
+```
+
+We will now run the TIMBER commands
+```
+ana.ObjectFromCollection('Top','FatJet','DijetIdxs[0]')
+ana.ObjectFromCollection('Phi','FatJet','DijetIdxs[1]')
+```
+ 
+Running this function will create a new group of variables containing all of the previously-named `FatJet_*` variables, but now containing just the single value based on the corresponding jet index. To help illustrate this, let's look back at the diagram we drew. The DataFrame with the new columns would look like:
+```
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Event # |          FatJet_pt            | Top_pt | Phi_pt |          FatJet_phi          | Top_phi | Phi_phi |         FatJet_eta          | Top_eta | Phi_eta |  DijetIdxs  |
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Event 0 | {782.1, 600.1, 534.3, 456.7}  | 782.1  |  534.3 |  {-2.82, 0.44, -1.12, 1.14}  | -2.82   |  -1.12  |  {-0.03, 1.23, 0.08, -1.3}  |  -0.03  |   0.08  |   {0, 2}    |
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+Now, we can create [TLorentz](https://github.com/lcorcodilos/TIMBER/blob/master/TIMBER/Framework/include/common.h#L119-L138) vectors from each newly-defined jet's pT, eta, phi, and softdrop mass:
+```
+ana.Define('Top_vect','hardware::TLvector(Top_pt, Top_eta, Top_phi, Top_msoftdrop)')
+ana.Define('Phi_vect','hardware::TLvector(Phi_pt, Phi_eta, Phi_phi, Phi_msoftdrop)')
+```
+
+Then, we use these TLvectors to reconstruct the invariant mass of the resonance:
+```
+ana.Define('mtphi','hardware::InvariantMass({Top_vect, Phi_vect})')
+```
+
+Let's now plot the phi mass vs the resonance mass and see what it looks like:
+```
+c = ROOT.TCanvas('c')
+c.cd()
+c.Print("/home/physicist/rootfiles/output_timber.pdf[")
+c.Clear()
+h1 = ana.DataFrame.Histo2D(('h1','#phi mass vs resonance mass - naive method;m_{#phi} [GeV];m_{res} [GeV]',40,60,260,22,800,3000),'Phi_msoftdrop','mtphi')
+h1.Draw("COLZ")
+c.Print('/home/physicist/rootfiles/output_timber.pdf')
+c.Clear()
+h1.Draw("LEGO2")
+c.Print('/home/physicist/rootfiles/output_timber.pdf')
+c.Clear()
+c.Print('/home/physicist/rootfiles/output_timber.pdf]')
+```
+
+When we define the 2D histogram `h1` on the 5th line, we are actually using RDataFrame directly through pyROOT via the TIMBER analyzer. This is one of the great features of TIMBER - the analyzer stores the RDataFrame internally, so we can actually use any RDataFrame method which has a pyROOT equivalent. In this case, we can call the [`RDataFrame.Histo2D()`](https://root.cern/doc/master/classROOT_1_1RDF_1_1RInterface.html#a0a29727f2ceca107e39cbff8b7cb3a1a) method, which takes in (in pyROOT at least) a tuple containing the histo name, title, axis labels (semicolon-delimited), and binning schema; followed by the column (variable) names you want to plot on the x- and y-axes. We then draw the histogram in two different ways and save them to a pdf file under `rootfiles/` so that it's accessible from outside the container as well. 
+ 
+At the end, you should get two plots that look like this:
+![image](https://user-images.githubusercontent.com/64038220/191665590-22687beb-9f49-45ee-8425-23558363ca72.png)
+![image](https://user-images.githubusercontent.com/64038220/191665630-d03592d1-ba29-49ac-8ee7-e2fbe65679a0.png)
+
+Does this plot of $\phi$ mass versus $T^{\prime}$ mass make sense? Recall that, for this signal sample, the mass of the $\phi$ is 125 GeV. What is causing that second bump appearing around 170 GeV? Why does that bump appear, even though we're plotting the $\phi$ mass? These are some things to think about, and you should also think of (and implement) ways of making the identification more robust.
+ 
+This concludes the first TIMBER exercise. Since we're only running TIMBER on a small signal sample in this exercise, we're limited in what interesting physics we can do. But this should serve as an introduction to the TIMBER framework and provide a conceptual overview for how to use TIMBER.
+ 
 </details>
 
 

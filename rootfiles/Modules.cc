@@ -9,6 +9,7 @@
  * come into conflict with other functions outside of the namespace with the same name */
 using namespace ROOT::VecOps;
 
+
 /* Here we define our first function. 
  * We first declare what the function returns - in this case a vector of integers.
  * We then declare the function name and its arguments. 
@@ -30,21 +31,20 @@ RVec<int> PickDijets(RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<floa
     // Then they specify how long to loop (less than the size of the input vector phi)
     // Then they increment the iterator by one after the end of all statements (ijet++)
     for (int ijet=0; ijet<phi.size(); ijet++) {
-	// begin loop over all jets in the event. We are going to compare the angle of the 0th
-	// jet to all other jets in the event and see if they are separated by at least pi/2
-	if (jet1Idx == -1) {	// we haven't yet found a jet that meets our criteria
-	    if (pt[ijet] > 350 && std::abs(eta[ijet]) < 2.4 && mass[ijet] > 50) {
-		if (jet0Idx == -1) {
-		    jet0Idx = ijet;
-		}
-		else {
-		    if (hardware::DeltaPhi(phi[jet0Idx], phi[ijet]) > M_PI/2) {
-			jet1Idx = ijet;
-			break;
-		    }
-		}
-	    }
-	}
+      // begin loop over all jets in the event. We are going to compare the angle of the 0th
+      // jet to all other jets in the event and see if they are separated by at least pi/2
+      if (jet1Idx == -1) {	// we haven't yet found a jet that meets our criteria
+        if (pt[ijet] > 350 && std::abs(eta[ijet]) < 2.4 && mass[ijet] > 50) {
+          if (jet0Idx == -1) {
+              jet0Idx = ijet;
+          } else {
+            if (hardware::DeltaPhi(phi[jet0Idx], phi[ijet]) > M_PI/2) {
+              jet1Idx = ijet;
+              break;
+            }
+          }
+        }
+      }
     }
     // The loop has now fully ended. We return the vector of integers representing the indices of
     // the two jets that are at least 90 degrees apart.
@@ -53,10 +53,29 @@ RVec<int> PickDijets(RVec<float> pt, RVec<float> eta, RVec<float> phi, RVec<floa
     // Going back to our example of an input vector of four jets, if jets 0 and 2 were at least 90 degrees
     // apart, we'd return:
     // 		input:    {jet0, jet1, jet2, jet3}
-    // 			    ^           ^
+    // 			           ^           ^
     // 			(these two meet our criteria)
     // 		return:		{0,2}
     return {jet0Idx, jet1Idx};
+};
+
+RVec<int> PickOppChargeMuons(RVec<float> muon_charge) {
+    // initialize two integers representing indices to test values
+  int muon0Idx = -1;
+  int muon1Idx = -1;
+  for (int iMuon=0; iMuon<muon_charge.size(); iMuon++) {
+    if (muon1Idx == -1) {
+      if (muon_charge[iMuon] == -1) {
+        muon0Idx = iMuon;
+      } else {
+        if (muon_charge[muon0Idx] == -muon_charge[iMuon]) {
+          muon1Idx = iMuon;
+          break;
+        }
+      }
+    }
+  }
+  return {muon0Idx, muon1Idx};
 };
 
 // This is the function for picking which jets are top ID'd. We will take in the indices (idxs) of the jets we defined to be 

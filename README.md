@@ -1,5 +1,5 @@
 # TIMBER in a container
-This repository contains the Dockerfile used to create a container running [TIMBER](https://github.com/lcorcodilos/TIMBER) and all its dependencies. Specifically, the resulting dockerfile makes use of the official [ROOT Docker image](https://hub.docker.com/r/rootproject/root) and a [modified version](https://github.com/mroguljic/TIMBER/tree/Zbb_branch_py3) of TIMBER that has support for Python 3 installation.
+This repository contains the Dockerfile used to create a container running [TIMBER](https://github.com/lcorcodilos/TIMBER) and all its dependencies. Specifically, the resulting dockerfile makes use of the official [ROOT Docker image](https://hub.docker.com/r/rootproject/root) and a [modified version](https://github.com/mroguljic/TIMBER/tree/Zbb_branch_py3) of TIMBER that has support for Python 3 installation. Many thanks to Amitav Mitra for maintaining TIMBER and providing examples.
 
 ## Table of Contents
 - [Setup](#setup)
@@ -23,8 +23,8 @@ After installing Docker and testing that it works (`docker run hello-world`), yo
 ## TLDR
 Here are the abridged instructions for getting started:
 ```
-git clone https://github.com/ammitra/timber-docker.git
-docker run --network=host -it ammitra/timber-docker:latest
+git clone https://github.com/tvami/timber-docker.git
+docker run --network=host -it tvami/timber-docker:latest
 source setup.sh
 ```
 At this point, you'll be inside the container and ready to use TIMBER!
@@ -41,7 +41,7 @@ source exercises.sh
 <summary>Longer setup instructions and info about Docker</summary>
 
 ### Pulling image
-To pull the ready-made image, run `docker pull ammitra/timber-docker:latest`
+To pull the ready-made image, run `docker pull ammitra/tvami-docker:latest`
 
 ### Building image
 To build the image, run `docker build --network=host -t timber-docker`. You can name the image whatever you'd like after the `-t` (tag) flag. 
@@ -49,9 +49,9 @@ To build the image, run `docker build --network=host -t timber-docker`. You can 
 ### Running the container
 After having built or pulled the image, you are ready to run it. First, run `docker images` to list the availabe images you have:
 ```
-[amitav@thinkpad ~]: docker images
+docker images
 REPOSITORY              TAG                   IMAGE ID       CREATED          SIZE
-ammitra/timber-docker   latest                9b33f3426e07   8 minutes ago    2.29GB
+tvami/timber-docker   latest                9b33f3426e07   8 minutes ago    2.29GB
 ```
 Run the desired image via `docker run --network=host -it <IMAGE ID>`. So, in the example above I'd run `docker run --network=host --entrypoint /bin/bash -it 9b33f3426e07`. The `--network=host` option isn't strictly necessary, but helps avoid possible annoying internet connection issues. The `-it` flag means that we want to run this container interactively. 
 
@@ -59,17 +59,17 @@ You can also skip pulling/running the container image, and just directly run `do
 
 **NOTE:** Once you've entered the container interactively, if you exit from that container (i.e. via `Ctrl+d`), anything in the container will be lost. This is by design (most containers are not run interactively, and instead perform a single executable or service). To get around this, it's often useful to start the container in the background (detached) via the `-d` flag. Then, you can enter the container again via `docker exec -t <CONTAINER ID> bash`, do your work, then exit the container at any point and be able to return to your work. An example is shown below:
 ```
-[amitav@thinkpad ~]: docker run --network=host -it -d ammitra/timber-docker:latest
+docker run --network=host -it -d ammitra/timber-docker:latest
 d6a61e2b22c297bc771f1ab1a4a0ae84aecb9f48b70c9e8ad3bab8fd7bd5f7ff
-[amitav@thinkpad ~]: docker container ls 
+docker container ls 
 CONTAINER ID   IMAGE                          COMMAND       CREATED          STATUS          PORTS     NAMES
 d6a61e2b22c2   ammitra/timber-docker:latest   "/bin/bash"   15 seconds ago   Up 14 seconds             brave_shaw
-[amitav@thinkpad ~]: docker exec -it d6a61e2b22c2 bash
+docker exec -it d6a61e2b22c2 bash
 physicist@thinkpad:~$ touch test
 physicist@thinkpad:~$ ls
 setup.sh  test
 physicist@thinkpad:~$ exit
-[amitav@thinkpad ~]: docker exec -it d6a61e2b22c2 bash
+docker exec -it d6a61e2b22c2 bash
 physicist@thinkpad:~$ ls
 setup.sh  test
 ```
@@ -93,9 +93,9 @@ docker run -v /path/to/local_dir:/path/in/container
 
 The `path/to/local_dir` is the explicit path to the directory you want to mount, and `/path/in/container` is the full path to where you'd like to have it mounted in the container. As an example, if I wanted to mount the `rootfiles` directory in this repository to the container, to have access to the files there once inside the container, I would do:
 ```
-[amitav@thinkpad ~]: pwd
+pwd
 /home/amitav/JHU/TIMBER_Docker
-[amitav@thinkpad ~]: docker run -it -v ~/JHU/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
+docker run -it -v ~/JHU/timber-docker/rootfiles:/home/physicist/rootfiles ammitra/timber-docker:latest
 physicist@1fd467d1e9b2:~$ ls
 rootfiles  setup.sh
 physicist@1fd467d1e9b2:~$ ls -alh rootfiles

@@ -1,1 +1,6 @@
 rootfiles/*.pdf
+*.root
+rootfiles/nanoAOD/*
+*.pdf
+*.out
+*.png

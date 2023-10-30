@@ -129,3 +129,12 @@ RVec<int> PickTop(RVec<float> mass, RVec<float> tagScore, RVec<int> idxs, std::p
     // we are done, return the vector of the indices of jets meeting top tag
     return out;
 };
+
+// Calculate scalar sum of jet pT
+float sumJetPt(RVec<float> jet_pt) {
+  float sum = 0.;
+  for (int ijet=0; ijet<jet_pt.size(); ijet++) {
+    sum += jet_pt[ijet];
+  }
+  return sum;
+}
